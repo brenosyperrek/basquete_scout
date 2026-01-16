@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scouting FIBA – Jogo ao Vivo</title>
+    <style>
+        :root{--primary:#1a2980;--secondary:#26d0ce;--accent:#ff6b6b;--dark:#2c3e50;--light:#f8f9fa}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:linear-gradient(135deg,var(--primary) 0%,var(--secondary) 100%);min-height:100vh;padding:20px;color:var(--dark)}
+        .container{max-width:1100px;margin:0 auto;background:white;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,.1);overflow:hidden}
+        .header{background:linear-gradient(135deg,var(--accent) 0%,#ee5a24 100%);color:white;padding:30px;text-align:center}
+        .header h1{font-size:2.2em;margin-bottom:10px;text-shadow:2px 2px 4px rgba(0,0,0,.3)}
+        .header p{font-size:1.1em;opacity:.9}
+        .form-container{padding:30px}
+        h2{margin-bottom:15px;font-size:1.4em;color:var(--dark)}
+        .section{background:var(--light);padding:20px;border-radius:15px;margin-bottom:25px;border:2px solid #e9ecef}
+        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}
+        .input-group{display:flex;flex-direction:column}
+        label{margin-bottom:4px;font-weight:600;font-size:.8em;color:#495057}
+        input[type="number"],input[type="text"],input[type="date"]{padding:10px;border:2px solid #dee2e6;border-radius:8px;font-size:1em;transition:border-color .3s ease}
+        input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,107,107,.1)}
+        .pct-box{background:#e3f2fd;padding:8px;border-radius:6px;font-weight:bold;color:#1976d2;text-align:center;margin-top:5px}
+        .btn-group{display:flex;gap:15px;margin-top:15px}
+        .btn{background:var(--accent);color:white;border:none;padding:10px 20px;border-radius:8px;font-size:1em;cursor:pointer;transition:all .3s ease}
+        .btn:hover{background:#ff3742;transform:translateY(-2px);box-shadow:0 5px 15px rgba(255,71,87,.3)}
+        .btn-secondary{background:#6c757d}
+        .btn-secondary:hover{background:#5a6268}
+        table{width:100%;border-collapse:collapse;margin-top:20px;font-size:.85em}
+        th,td{padding:8px;text-align:center;border:1px solid #dee2e6}
+        th{background:var(--accent);color:white}
+        tr:nth-child(even){background:#f8f9fa}
+        tr{cursor:pointer}
+        tr:hover{background:#ffe5e5}
+        .legend{background:#fafafa;border:1px solid #dee2e6;border-radius:8px;padding:15px;margin-top:20px;font-size:.75em}
+        .legend h4{margin-bottom:8px;color:var(--dark)}
+        .legend-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:6px}
+
+        /* ---------- RELATÓRIO ESTILIZADO ---------- */
+        .report-section{background:#fff;border:1px solid #dee2e6;border-radius:12px;padding:20px;margin-bottom:20px}
+        .report-section h3{margin-bottom:15px;font-size:1.3em;color:var(--accent)}
+        .game-header{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:15px;margin-bottom:25px}
+        .gh-card{background:#fff;border:2px solid #e9ecef;border-radius:12px;padding:12px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.05)}
+        .gh-label{font-size:.75em;color:#6c757d;margin-bottom:4px}
+        .gh-value{font-size:1.4em;font-weight:bold;color:var(--dark)}
+        .score-highlight{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:25px}
+        .sh-item{background:linear-gradient(135deg,var(--accent) 0%,#ee5a24 100%);color:#fff;border-radius:12px;padding:20px 10px;text-align:center;box-shadow:0 4px 10px rgba(255,107,107,.3)}
+        .sh-value{font-size:2.2em;font-weight:bold}
+        .sh-label{font-size:.9em;opacity:.9;margin-top:4px}
+        .rs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px}
+        .rs-card{background:var(--light);border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,.05)}
+        .rs-label{font-size:.7em;color:#6c757d;margin-bottom:4px}
+        .rs-val{font-size:1.3em;font-weight:bold;color:var(--dark)}
+        @media print{.btn,.print-btn{display:none}.container{box-shadow:none;margin:0}.legend{display:block!important}}
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🏀 Scouting FIBA – Jogo ao Vivo</h1>
+        <p>Alimente os dados em tempo real, salve no banco e gere o relatório final</p>
+    </div>
+
+    <div class="form-container">
+        <!-- DADOS DO JOGO -->
+        <div class="section">
+            <h2>Dados do Jogo</h2>
+            <div class="grid">
+                <div class="input-group"><label>Data do Jogo</label><input type="date" id="data" value=""></div>
+                <div class="input-group"><label>Adversário</label><input type="text" id="adversario" placeholder="Nome do time adversário"></div>
+                <div class="input-group"><label>Nome do Jogador</label><input type="text" id="nome" placeholder="Nome completo"></div>
+                <div class="input-group"><label>MIN – Minutos Jogados</label><input type="number" id="min" min="0" max="60" placeholder="Minutos"></div>
+            </div>
+        </div>
+
+        <!-- ARREMESSOS -->
+        <div class="section">
+            <h2>Arremessos</h2>
+            <div class="grid">
+                <div class="input-group"><label>FGM – Convertidos</label><input type="number" id="fgm" min="0" value="0"></div>
+                <div class="input-group"><label>FGA – Tentados</label><input type="number" id="fga" min="0" value="0"></div>
+                <div class="input-group"><label>3PM – 3 pts Convertidos</label><input type="number" id="tpm" min="0" value="0"></div>
+                <div class="input-group"><label>3PA – 3 pts Tentados</label><input type="number" id="tpa" min="0" value="0"></div>
+                <div class="input-group"><label>FTM – LL Convertidos</label><input type="number" id="ftm" min="0" value="0"></div>
+                <div class="input-group"><label>FTA – LL Tentados</label><input type="number" id="fta" min="0" value="0"></div>
+            </div>
+            <div class="grid" style="margin-top:10px">
+                <div class="pct-box" id="fgp">FG%: 0,0 %</div>
+                <div class="pct-box" id="tpp">3P%: 0,0 %</div>
+                <div class="pct-box" id="ftp">FT%: 0,0 %</div>
+            </div>
+        </div>
+
+        <!-- AÇÕES FÍSICAS -->
+        <div class="section">
+            <h2>Ações Físicas & Intelectuais</h2>
+            <div class="grid">
+                <div class="input-group"><label>RO – Rebotes Ofensivos</label><input type="number" id="oro" min="0" value="0"></div>
+                <div class="input-group"><label>RD – Rebotes Defensivos</label><input type="number" id="dre" min="0" value="0"></div>
+                <div class="input-group"><label>REB – Rebotes Totais (auto)</label><input type="number" id="reb" min="0" value="0" readonly style="background:#e9ecef"></div>
+                <div class="input-group"><label>AST – Assistências</label><input type="number" id="ast" min="0" value="0"></div>
+                <div class="input-group"><label>STL – Roubos de Bola</label><input type="number" id="stl" min="0" value="0"></div>
+                <div class="input-group"><label>BLK – Tocos (Bloqueios)</label><input type="number" id="blk" min="0" value="0"></div>
+                <div class="input-group"><label>TOV – Turnovers</label><input type="number" id="tov" min="0" value="0"></div>
+                <div class="input-group"><label>PF – Faltas Pessoais</label><input type="number" id="pf" min="0" value="0"></div>
+            </div>
+        </div>
+
+        <!-- BOTÕES -->
+        <div class="btn-group">
+            <button class="btn" onclick="salvarNoBanco()">Salvar no Banco</button>
+            <button class="btn btn-secondary print-btn" onclick="window.print()">Imprimir Relatório</button>
+        </div>
+
+        <!-- LISTAGEM DE JOGOS -->
+        <div class="section">
+            <h2>Jogos Salvos (clique na linha para carregar)</h2>
+            <table id="tabelaJogos">
+                <thead>
+                    <tr>
+                        <th>Data</th><th>Adversário</th><th>Jogador</th><th>MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>EF</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- RELATÓRIO FINAL ESTILIZADO -->
+        <div class="section report" id="report">
+            <h2 style="text-align:center;font-size:1.8em;color:#ff6b6b;margin-bottom:20px">📊 Relatório Final – Estatísticas FIBA</h2>
+
+            <!-- CABEÇALHO DO JOGO -->
+            <div class="game-header">
+                <div class="gh-card"><div class="gh-label">Data</div><div class="gh-value" id="r-data">-</div></div>
+                <div class="gh-card"><div class="gh-label">Adversário</div><div class="gh-value" id="r-adv">-</div></div>
+                <div class="gh-card"><div class="gh-label">Jogador</div><div class="gh-value" id="r-nome">-</div></div>
+                <div class="gh-card"><div class="gh-label">Minutos</div><div class="gh-value" id="r-min">-</div></div>
+            </div>
+
+            <!-- PONTUAÇÃO DESTACADA -->
+            <div class="score-highlight">
+                <div class="sh-item"><div class="sh-value" id="r-pts">0</div><div class="sh-label">PTS</div></div>
+                <div class="sh-item"><div class="sh-value" id="r-reb">0</div><div class="sh-label">REB</div></div>
+                <div class="sh-item"><div class="sh-value" id="r-ast">0</div><div class="sh-label">AST</div></div>
+                <div class="sh-item"><div class="sh-value" id="r-ef">0</div><div class="sh-label">EF</div></div>
+            </div>
+
+            <!-- SEÇÕES DE DADOS -->
+            <div class="report-section">
+                <h3>Arremessos</h3>
+                <div class="rs-grid">
+                    <div class="rs-card"><div class="rs-label">FGM</div><div class="rs-val" id="r-fgm">0</div></div>
+                    <div class="rs-card"><div class="rs-label">FGA</div><div class="rs-val" id="r-fga">0</div></div>
+                    <div class="rs-card"><div class="rs-label">FG%</div><div class="rs-val" id="r-fgp">0%</div></div>
+                    <div class="rs-card"><div class="rs-label">3PM</div><div class="rs-val" id="r-3pm">0</div></div>
+                    <div class="rs-card"><div class="rs-label">3PA</div><div class="rs-val" id="r-3pa">0</div></div>
+                    <div class="rs-card"><div class="rs-label">3P%</div><div class="rs-val" id="r-3pp">0%</div></div>
+                    <div class="rs-card"><div class="rs-label">FTM</div><div class="rs-val" id="r-ftm">0</div></div>
+                    <div class="rs-card"><div class="rs-label">FTA</div><div class="rs-val" id="r-fta">0</div></div>
+                    <div class="rs-card"><div class="rs-label">FT%</div><div class="rs-val" id="r-ftp">0%</div></div>
+                </div>
+            </div>
+
+            <div class="report-section">
+                <h3>Fundamentos Completos</h3>
+                <div class="rs-grid">
+                    <div class="rs-card"><div class="rs-label">RO</div><div class="rs-val" id="r-ro">0</div></div>
+                    <div class="rs-card"><div class="rs-label">RD</div><div class="rs-val" id="r-rd">0</div></div>
+                    <div class="rs-card"><div class="rs-label">STL</div><div class="rs-val" id="r-stl">0</div></div>
+                    <div class="rs-card"><div class="rs-label">BLK</div><div class="rs-val" id="r-blk">0</div></div>
+                    <div class="rs-card"><div class="rs-label">TOV</div><div class="rs-val" id="r-tov">0</div></div>
+                    <div class="rs-card"><div class="rs-label">PF</div><div class="rs-val" id="r-pf">0</div></div>
+                </div>
+            </div>
+
+            <div class="report-section">
+                <h3>Indicadores por 40 minutos</h3>
+                <div class="rs-grid">
+                    <div class="rs-card"><div class="rs-label">PTS/40</div><div class="rs-val" id="r-pts40">0</div></div>
+                    <div class="rs-card"><div class="rs-label">REB/40</div><div class="rs-val" id="r-reb40">0</div></div>
+                    <div class="rs-card"><div class="rs-label">AST/40</div><div class="rs-val" id="r-ast40">0</div></div>
+                    <div class="rs-card"><div class="rs-label">EF/40</div><div class="rs-val" id="r-ef40">0</div></div>
+                </div>
+            </div>
+
+            <!-- LEGENDA (sempre impressa) -->
+            <div class="legend" id="legend">
+                <h4>Legenda – Abreviações FIBA</h4>
+                <div class="legend-grid">
+                    <div><strong>MIN:</strong> Minutos jogados</div>
+                    <div><strong>PTS:</strong> Pontos marcados</div>
+                    <div><strong>FGM/FGA:</strong> Arremessos de campo convertidos / tentados</div>
+                    <div><strong>FG%:</strong> Percentual de campo</div>
+                    <div><strong>3PM/3PA:</strong> 3 pontos convertidos / tentados</div>
+                    <div><strong>3P%:</strong> Percentual de 3 pontos</div>
+                    <div><strong>FTM/FTA:</strong> Lances livres convertidos / tentados</div>
+                    <div><strong>FT%:</strong> Percentual de lances livres</div>
+                    <div><strong>REB:</strong> Rebotes totais</div>
+                    <div><strong>RO:</strong> Rebotes ofensivos</div>
+                    <div><strong>RD:</strong> Rebotes defensivos</div>
+                    <div><strong>AST:</strong> Assistências</div>
+                    <div><strong>STL:</strong> Roubos de bola</div>
+                    <div><strong>BLK:</strong> Bloqueios (tocos)</div>
+                    <div><strong>TOV:</strong> Perdas de bola (turnovers)</div>
+                    <div><strong>PF:</strong> Faltas pessoais</div>
+                    <div><strong>EF:</strong> Eficiência geral (PTS+REB+AST+STL+BLK - (FGA-FGM) - (FTA-FTM) - TOV)</div>
+                    <div><strong>PTS/40 – REB/40 – AST/40 – EF/40:</strong> Indicadores normalizados para 40 minutos</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ---------- ELEMENTOS ---------- */
+const $ = id => document.getElementById(id);
+const val = id => parseFloat($(id).value) || 0;
+
+/* ---------- SOMAR REBOTES ---------- */
+function somaRebotes(){
+    const ro = val('oro');
+    const rd = val('dre');
+    $('reb').value = (ro + rd);
+}
+
+/* ---------- CÁLCULO & RELATÓRIO ---------- */
+function geraRelatorio(){
+    // entrada
+    const nome = $('nome').value || 'Atleta';
+    const min = val('min');
+    const fgm = val('fgm'), fga = val('fga');
+    const tpm = val('tpm'), tpa = val('tpa');
+    const ftm = val('ftm'), fta = val('fta');
+    const reb = val('reb'), oro = val('oro'), dre = val('dre');
+    const ast = val('ast'), stl = val('stl'), blk = val('blk'), tov = val('tov'), pf = val('pf');
+
+    // pontos
+    const pts = fgm*2 + tpm*1 + ftm*1;
+
+    // porcentagens
+    const fgp = fga>0 ? (fgm/fga*100) : 0;
+    const tpp = tpa>0 ? (tpm/tpa*100) : 0;
+    const ftp = fta>0 ? (ftm/fta*100) : 0;
+
+    // eficiência geral FIBA
+    const ef = (pts + reb + ast + stl + blk) - (fga-fgm) - (fta-ftm) - tov;
+
+    // por 40 min
+    const minFactor = min>0 ? 40/min : 1;
+    const ptsPM = (pts*minFactor).toFixed(1).replace('.',',');
+    const rebPM = (reb*minFactor).toFixed(1).replace('.',',');
+    const astPM = (ast*minFactor).toFixed(1).replace('.',',');
+    const efPM  = (ef*minFactor).toFixed(1).replace('.',',');
+
+    // atualiza porcentagens na tela
+    $('fgp').textContent = `FG%: ${fgp.toFixed(1).replace('.',',')} %`;
+    $('tpp').textContent = `3P%: ${tpp.toFixed(1).replace('.',',')} %`;
+    $('ftp').textContent = `FT%: ${ftp.toFixed(1).replace('.',',')} %`;
+
+    /* ---------- POPULA RELATÓRIO ESTILIZADO ---------- */
+    // cabeçalho
+    $('r-data').textContent = $('data').value;
+    $('r-adv').textContent = $('adversario').value;
+    $('r-nome').textContent = nome;
+    $('r-min').textContent = min;
+
+    // destaques
+    $('r-pts').textContent = pts;
+    $('r-reb').textContent = reb;
+    $('r-ast').textContent = ast;
+    $('r-ef').textContent = ef.toFixed(1).replace('.',',');
+
+    // arremessos
+    $('r-fgm').textContent = fgm;
+    $('r-fga').textContent = fga;
+    $('r-fgp').textContent = fgp.toFixed(1).replace('.',',')+'%';
+    $('r-3pm').textContent = tpm;
+    $('r-3pa').textContent = tpa;
+    $('r-3pp').textContent = tpp.toFixed(1).replace('.',',')+'%';
+    $('r-ftm').textContent = ftm;
+    $('r-fta').textContent = fta;
+    $('r-ftp').textContent = ftp.toFixed(1).replace('.',',')+'%';
+
+    // fundamentos
+    $('r-ro').textContent = oro;
+    $('r-rd').textContent = dre;
+    $('r-stl').textContent = stl;
+    $('r-blk').textContent = blk;
+    $('r-tov').textContent = tov;
+    $('r-pf').textContent = pf;
+
+    // por 40
+    $('r-pts40').textContent = ptsPM;
+    $('r-reb40').textContent = rebPM;
+    $('r-ast40').textContent = astPM;
+    $('r-ef40').textContent = efPM;
+}
+
+/* ---------- SALVAR NO BANCO ---------- */
+async function salvarNoBanco(){
+    const payload = {
+        data: $('data').value,
+        adversario: $('adversario').value,
+        nome: $('nome').value,
+        min: val('min'),
+        pts: val('fgm')*2 + val('tpm')*1 + val('ftm')*1,
+        fgm: val('fgm'), fga: val('fga'),
+        tpm: val('tpm'), tpa: val('tpa'),
+        ftm: val('ftm'), fta: val('fta'),
+        oro: val('oro'), dre: val('dre'), reb: val('reb'),
+        ast: val('ast'), stl: val('stl'), blk: val('blk'), tov: val('tov'), pf: val('pf'),
+        ef: (val('fgm')*2 + val('tpm')*1 + val('ftm')*1 + val('reb') + val('ast') + val('stl') + val('blk')) - (val('fga')-val('fgm')) - (val('fta')-val('ftm')) - val('tov'),
+        pts_40: ((val('fgm')*2 + val('tpm')*1 + val('ftm')*1) * (val('min')>0?40/val('min'):1)).toFixed(1),
+        reb_40: (val('reb') * (val('min')>0?40/val('min'):1)).toFixed(1),
+        ast_40: (val('ast') * (val('min')>0?40/val('min'):1)).toFixed(1),
+        ef_40:  ((val('fgm')*2 + val('tpm')*1 + val('ftm')*1 + val('reb') + val('ast') + val('stl') + val('blk') - (val('fga')-val('fgm')) - (val('fta')-val('ftm')) - val('tov')) * (val('min')>0?40/val('min'):1)).toFixed(1),
+        fgp: val('fga')>0?(val('fgm')/val('fga')*100).toFixed(1):0,
+        tpp: val('tpa')>0?(val('tpm')/val('tpa')*100).toFixed(1):0,
+        ftp: val('fta')>0?(val('ftm')/val('fta')*100).toFixed(1):0
+    };
+
+    try{
+        const res = await fetch('http://localhost:8080/api/salvar',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if(!res.ok) throw new Error(res.statusText);
+        alert('Jogo salvo com sucesso!');
+        listaJogos();               // recarrega lista
+    }catch(e){
+        alert('Erro ao salvar: '+e.message);
+    }
+}
+
+/* ---------- LISTAR JOGOS ---------- */
+async function listaJogos(){
+    try{
+        const res = await fetch('http://localhost:8080/api/listar');
+        const jogos = await res.json();
+        const tbody = $('tabelaJogos').querySelector('tbody');
+        tbody.innerHTML = jogos.map(j=>`
+            <tr onclick="carregaJogo(${j.id})">
+                <td>${j.data}</td>
+                <td>${j.adversario}</td>
+                <td>${j.nome_jogador}</td>
+                <td>${j.min}</td>
+                <td>${j.pts}</td>
+                <td>${j.reb}</td>
+                <td>${j.ast}</td>
+                <td>${j.ef}</td>
+            </tr>`).join('');
+    }catch(e){
+        console.error('Erro ao listar:',e);
+    }
+}
+
+/* ---------- CARREGAR JOGO ---------- */
+async function carregaJogo(id){
+    try{
+        const res = await fetch(`http://localhost:8080/api/buscar/${id}`);
+        const j = await res.json();
+        // preenche campos
+        $('data').value = j.data;
+        $('adversario').value = j.adversario;
+        $('nome').value = j.nome_jogador;
+        $('min').value = j.min;
+        $('fgm').value = j.fgm; $('fga').value = j.fga;
+        $('tpm').value = j.tpm; $('tpa').value = j.tpa;
+        $('ftm').value = j.ftm; $('fta').value = j.fta;
+        $('oro').value = j.oro; $('dre').value = j.dre; $('reb').value = j.reb;
+        $('ast').value = j.ast; $('stl').value = j.stl; $('blk').value = j.blk;
+        $('tov').value = j.tov; $('pf').value = j.pf;
+        // recalcula
+        geraRelatorio();
+    }catch(e){
+        alert('Erro ao carregar: '+e.message);
+    }
+}
+
+/* ---------- INICIA ---------- */
+document.querySelectorAll('input').forEach(inp => inp.addEventListener('input', ()=>{
+    somaRebotes();
+    geraRelatorio();
+}));
+window.addEventListener('load', ()=>{
+    // coloca data de hoje
+    $('data').valueAsDate = new Date();
+    somaRebotes();
+    geraRelatorio();
+    listaJogos();
+});
+</script>
+</body>
+</html>
