@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS jogos (
+    id SERIAL PRIMARY KEY,
+    data DATE NOT NULL,
+    adversario VARCHAR(100) NOT NULL,
+    nome_jogador VARCHAR(100) NOT NULL,
+    min SMALLINT,
+    pts SMALLINT,
+    fgm SMALLINT, fga SMALLINT,
+    tpm SMALLINT, tpa SMALLINT,
+    ftm SMALLINT, fta SMALLINT,
+    oro SMALLINT, dre SMALLINT, reb SMALLINT,
+    ast SMALLINT, stl SMALLINT, blk SMALLINT,
+    tov SMALLINT, pf SMALLINT,
+    ef NUMERIC(5,1),
+    pts_40 NUMERIC(5,1),
+    reb_40 NUMERIC(5,1),
+    ast_40 NUMERIC(5,1),
+    ef_40 NUMERIC(5,1),
+    fgp NUMERIC(5,1),
+    tpp NUMERIC(5,1),
+    ftp NUMERIC(5,1)
+);

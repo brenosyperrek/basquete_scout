@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: scout-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: scoutdb
+      POSTGRES_USER: scout
+      POSTGRES_PASSWORD: scout123
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  app:
+    build: .
+    container_name: scout-app
+    restart: unless-stopped
+    ports:
+      - "8087:80"
+    depends_on:
+      - db
+
+volumes:
+  db_data:
